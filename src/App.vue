@@ -1,14 +1,14 @@
 <template>
   <div id="app">
-    <NewList></NewList>
+    <Header></Header>
   </div>
 </template>
 
 <script type="text/javascript">
-  import NewList from 'components/newlist'
-  export default {
-    components:{
-      NewList
-    }
+import Header from 'components/header/header';
+export default {
+  components: {
+    Header
   }
-</script>
+};
+</script> 
