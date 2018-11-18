@@ -13,11 +13,12 @@
               :listen-scroll="listenScroll"
       >
         <div ref="nav">
-          <a v-for="(item,index) in recomList" 
+          <a v-for="item in recomList" 
             :class="{active:item.type === currentType.type}"
             @click="setTypeItem" 
             :data-type="item.type"
             :data-name="item.name"
+            :key="item.name"
           >
           {{item.name}}
           </a>
@@ -34,98 +35,95 @@
 </template>
 
 <script>
-import {mapGetters,mapMutations} from 'vuex';
+import { mapGetters, mapMutations } from 'vuex';
 import Scroll from 'base/scroll/scroll';
 import NavManage from 'components/navmanage/navmanage';
-import {getData} from 'common/js/dom';
+import { getData } from 'common/js/dom';
 
 export default {
-  data(){
+  data() {
     return {
-      navmanageIsShow:false,
-      scrollx:-1,
-      recomList:[]
-    }
+      navmanageIsShow: false,
+      scrollx: -1,
+      recomList: []
+    };
   },
-  created(){
+  created() {
     this.scrollX = true;
     this.listenScroll = true;
     this.probeType = 3;
-    this.recomList = this.recomTypes.slice()
+    this.recomList = this.recomTypes.slice();
   },
-  mounted(){
-   this._initScroll();
+  mounted() {
+    this._initScroll();
   },
-  computed:{
-    ...mapGetters([
-      'recomTypes',
-      'currentType'
-    ])
+  computed: {
+    ...mapGetters(['recomTypes', 'currentType'])
   },
-  methods:{
-    _initScroll(){
+  methods: {
+    _initScroll() {
       setTimeout(() => {
         this._setNavWidth();
         this.$refs.scroll.refresh();
-      },20)
+      }, 20);
     },
-    _setNavWidth(){
+    _setNavWidth() {
       this.children = this.$refs.nav.children;
       let width = 0;
-      for(var i = 0; i < this.children.length; i++){
+      for (var i = 0; i < this.children.length; i++) {
         let child = this.children[i];
-        width += child.clientWidth
+        width += child.clientWidth;
       }
-      this.$refs.nav.style.width = width+'px';
+      this.$refs.nav.style.width = width + 'px';
     },
-    hideNavManage(){
+    hideNavManage() {
       this.navmanageIsShow = false;
     },
-    showNavManage(){
+    showNavManage() {
       this.navmanageIsShow = true;
     },
-    setTypeItem(e){
-      const dataType = getData(e.target,'type');
-      const dataName = getData(e.target,'name');
+    setTypeItem(e) {
+      const dataType = getData(e.target, 'type');
+      const dataName = getData(e.target, 'name');
       this.setCurrentType({
-        type:dataType,
-        name:dataName
-      })
+        type: dataType,
+        name: dataName
+      });
       this._scrollTo(e);
     },
-    resetTypes(){
+    resetTypes() {
       this.recomList = this.recomTypes.slice();
       this._initScroll();
     },
-    scroll(pos){
-      this.scrollx = pos.x
+    scroll(pos) {
+      this.scrollx = pos.x;
     },
-    _scrollTo(e){
-      const cw = document.body.clientWidth / 2 ;
+    _scrollTo(e) {
+      const cw = document.body.clientWidth / 2;
       const rect = e.target.getBoundingClientRect();
       const mindel = this.$refs.scroll.$el.clientWidth - this.$refs.nav.clientWidth;
       let del = cw - rect.x + this.scrollx;
-      if(mindel > 0)return;
-      if(del >= 0){
-        del = 0 ;
+      if (mindel > 0) return;
+      if (del >= 0) {
+        del = 0;
       }
-      if(del < mindel){
-        del = mindel
+      if (del < mindel) {
+        del = mindel;
       }
-      this.$refs.scroll.scrollTo(del,0)
+      this.$refs.scroll.scrollTo(del, 0);
       this.scrollx = del;
     },
     ...mapMutations({
-      setRecomTypes:'SET_RECOM_TYPES',
-      setOtherTypes:'SET_OTHER_TYPES',
-      setCurrentType:'SET_CURRENT_TYPE'
+      setRecomTypes: 'SET_RECOM_TYPES',
+      setOtherTypes: 'SET_OTHER_TYPES',
+      setCurrentType: 'SET_CURRENT_TYPE'
     })
   },
-  components:{
+  components: {
     Scroll,
     NavManage
   }
-}
+};
 </script>
 
 <style lang="less" scoped>
@@ -134,7 +132,7 @@ export default {
   width: 100%;
   height: 0.74rem;
   position: relative;
-  background-color:@color-bar;
+  background-color: @color-bar;
   &::after {
     content: '';
     position: absolute;
@@ -168,9 +166,9 @@ export default {
     height: 0.72rem;
     font-size: 0.34rem;
     line-height: 0.54rem;
-    .ml-content{
-      height:100%;
-      overflow:hidden;
+    .ml-content {
+      height: 100%;
+      overflow: hidden;
     }
     &::-webkit-scrollbar {
       display: none;
@@ -180,15 +178,15 @@ export default {
       height: 0.52rem;
       margin: 0.1rem 0 0.1rem 0;
       padding: 0 0.15rem;
-      padding-left:0.25rem;
-      padding-right:0.15rem;
+      padding-left: 0.25rem;
+      padding-right: 0.15rem;
       -webkit-animation: fadeout 0.4s;
       animation: fadeout 0.4s;
       vertical-align: middle;
       white-space: nowrap;
       color: @color-text-b;
-      &.active{
-        color:@color-text-a;
+      &.active {
+        color: @color-text-a;
       }
     }
   }
