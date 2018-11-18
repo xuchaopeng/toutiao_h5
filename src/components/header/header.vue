@@ -3,7 +3,7 @@
     <div class="top-bar">
       <div class="abs-m">
         <a class="refresh-title">今日头条</a>
-        <div class="refresh-btn"></div>
+        <div class="refresh-btn"><i class="iconfont refresh-icon">&#xe682;</i></div>
       </div>
     </div>
   </div>
@@ -18,9 +18,6 @@ export default {};
   display: block;
   z-index: 999;
   overflow: hidden;
-  top: 0;
-  left: 0;
-  right: 0;
   .top-bar {
     width: 100%;
     height: 0.88rem;
@@ -52,6 +49,12 @@ export default {};
         width: 0.5rem;
         height: 0.88rem;
         background-color: #d43d3d;
+        .refresh-icon {
+          color: #fff;
+          font-weight: normal;
+          line-height: 0.88rem;
+          font-size: 0.48rem;
+        }
       }
     }
   }
