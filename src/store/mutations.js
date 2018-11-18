@@ -9,6 +9,9 @@ const mutaions = {
   },
   [types.SET_OTHER_TYPES](state,otherTypes){
     state.otherTypes = otherTypes
+  },
+  [types.SET_CURRENT_TOP](state,h) {
+    state.currentTop = h
   }
 }
 

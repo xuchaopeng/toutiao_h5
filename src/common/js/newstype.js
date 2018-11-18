@@ -3,9 +3,6 @@ export const recomTypes = [
     type: 'guoji',
     name: '国际'
   }, {
-      type: 'redian',
-      name: '热点'
-  }, {
       type: 'junshi',
       name: '军事'
   }, {
@@ -39,9 +36,6 @@ export const otherTypes = [
   }, {
       type: 'tiyu',
       name: '体育'
-  }, {
-      type: 'qiche',
-      name: '汽车'
   }, {
       type: 'youxi',
       name: '游戏'

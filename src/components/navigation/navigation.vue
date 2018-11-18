@@ -1,19 +1,19 @@
 <template>
 <div class="top_menu_bar">
   <div class="top_menu_more">
-    <a class="more_btn iconfont">&#xe627;</a>
+    <a class="more_btn iconfont" @click="showNavManage">&#xe627;</a>
   </div>
   <div id="J_top_menu" class="top_menu_list">
     <div class="ml-content">
       <Scroll ref="scroll" 
               @scroll="scroll"
               :probe-type="probeType"
-              :data="typelist" 
+              :data="recomList" 
               :scrollX="scrollX"
               :listen-scroll="listenScroll"
       >
         <div ref="nav">
-          <a v-for="(item,index) in typelist" 
+          <a v-for="(item,index) in recomList" 
             :class="{active:item.type === currentType.type}"
             @click="setTypeItem" 
             :data-type="item.type"
@@ -25,41 +25,50 @@
       </Scroll>
     </div>
   </div>
+  <NavManage v-if="navmanageIsShow" 
+             @resetTypes="resetTypes"
+             @hideNavManage="hideNavManage"
+  >
+  </NavManage>
 </div>
 </template>
 
 <script>
 import {mapGetters,mapMutations} from 'vuex';
 import Scroll from 'base/scroll/scroll';
+import NavManage from 'components/navmanage/navmanage';
 import {getData} from 'common/js/dom';
 
 export default {
   data(){
     return {
+      navmanageIsShow:false,
       scrollx:-1,
-      typelist:[]
+      recomList:[]
     }
   },
   created(){
     this.scrollX = true;
     this.listenScroll = true;
     this.probeType = 3;
-    this.typelist = this.recomTypes.slice();
+    this.recomList = this.recomTypes.slice()
   },
   mounted(){
-    setTimeout(() => {
-      this._setNavWidth();
-      this.$refs.scroll.refresh();
-    },20)
+   this._initScroll();
   },
   computed:{
     ...mapGetters([
       'recomTypes',
-      'otherTypes',
       'currentType'
     ])
   },
   methods:{
+    _initScroll(){
+      setTimeout(() => {
+        this._setNavWidth();
+        this.$refs.scroll.refresh();
+      },20)
+    },
     _setNavWidth(){
       this.children = this.$refs.nav.children;
       let width = 0;
@@ -68,6 +77,12 @@ export default {
         width += child.clientWidth
       }
       this.$refs.nav.style.width = width+'px';
+    },
+    hideNavManage(){
+      this.navmanageIsShow = false;
+    },
+    showNavManage(){
+      this.navmanageIsShow = true;
     },
     setTypeItem(e){
       const dataType = getData(e.target,'type');
@@ -78,6 +93,10 @@ export default {
       })
       this._scrollTo(e);
     },
+    resetTypes(){
+      this.recomList = this.recomTypes.slice();
+      this._initScroll();
+    },
     scroll(pos){
       this.scrollx = pos.x
     },
@@ -86,6 +105,7 @@ export default {
       const rect = e.target.getBoundingClientRect();
       const mindel = this.$refs.scroll.$el.clientWidth - this.$refs.nav.clientWidth;
       let del = cw - rect.x + this.scrollx;
+      if(mindel > 0)return;
       if(del >= 0){
         del = 0 ;
       }
@@ -102,7 +122,8 @@ export default {
     })
   },
   components:{
-    Scroll
+    Scroll,
+    NavManage
   }
 }
 </script>

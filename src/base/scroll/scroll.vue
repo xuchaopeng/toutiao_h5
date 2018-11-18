@@ -50,7 +50,7 @@
       //确保dom渲染完毕才初始化
       setTimeout(() => {
         this._initScroll()
-      },1000)
+      },20)
     },
     methods:{
       _initScroll() {
