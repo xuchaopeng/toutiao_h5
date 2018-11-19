@@ -1,37 +1,36 @@
 <template>
-<div class="top_menu_bar">
-  <div class="top_menu_more">
-    <a class="more_btn iconfont" @click="showNavManage">&#xe627;</a>
-  </div>
-  <div id="J_top_menu" class="top_menu_list">
-    <div class="ml-content">
-      <Scroll ref="scroll" 
-              @scroll="scroll"
-              :probe-type="probeType"
-              :data="recomList" 
-              :scrollX="scrollX"
-              :listen-scroll="listenScroll"
-      >
-        <div ref="nav">
-          <a v-for="item in recomList" 
-            :class="{active:item.type === currentType.type}"
-            @click="setTypeItem" 
-            :data-type="item.type"
-            :data-name="item.name"
-            :key="item.name"
-          >
-          {{item.name}}
-          </a>
-        </div>
-      </Scroll>
+  <div class="top_menu_bar">
+    <div class="top_menu_more">
+      <a class="more_btn iconfont"
+         @click="showNavManage">&#xe627;</a>
     </div>
+    <div id="J_top_menu"
+         class="top_menu_list">
+      <div class="ml-content">
+        <Scroll ref="scroll"
+                @scroll="scroll"
+                :probe-type="probeType"
+                :data="recomList"
+                :scrollX="scrollX"
+                :listen-scroll="listenScroll">
+          <div ref="nav">
+            <a v-for="item in recomList"
+               :class="{active:item.type === currentType.type}"
+               @click="setTypeItem"
+               :data-type="item.type"
+               :data-name="item.name"
+               :key="item.name">
+              {{item.name}}
+            </a>
+          </div>
+        </Scroll>
+      </div>
+    </div>
+    <NavManage v-if="navmanageIsShow"
+               @resetTypes="resetTypes"
+               @hideNavManage="hideNavManage">
+    </NavManage>
   </div>
-  <NavManage v-if="navmanageIsShow" 
-             @resetTypes="resetTypes"
-             @hideNavManage="hideNavManage"
-  >
-  </NavManage>
-</div>
 </template>
 
 <script>

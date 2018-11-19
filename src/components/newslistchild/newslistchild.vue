@@ -1,50 +1,74 @@
 <template>
-  <div class="newslist" :data="dataList" v-show="newType === currentType.type">
+  <div class="newslist"
+       v-show="newType === currentType.type"
+       ref="newslist">
+    <Scroll ref="scroll"
+            :data="dataList"
+            :listenScroll="listenScroll"
+            :pullup="pullup"
+            :pulldown="pulldown"
+            :probeType="probeType"
+            @scrollEnd="scrollEnd"
+            @scrollPullDown="scrollPullDown"
+            @scroll="scroll">
       <div class="news-list-wrap">
         <template v-for="list in dataList">
-          <section v-for="item in list" class="news-item">
-              <a v-if="item.imgurl.length>=3" class="J-news news-item-s2" href="/">
-                <div class="news-warp">
-                  <h3 v-html="item.title"></h3>
-                  <div class="item-img">
-                    <div class="img">
-                      <img class="lazy" :src="item.imgurl[0].url" />
-                    </div>
-                    <div class="img">
-                      <img class="lazy" :src="item.imgurl[1].url" />
-                    </div>
-                    <div class="img">
-                      <img class="lazy" :src="item.imgurl[2].url" />
-                    </div>
-                  </div>
-                  <div class="item-info">
-                    <span v-html="item.author"></span>
-                  </div>
-                </div>
-              </a>
-              <a v-if="item.imgurl.length>=1" class="J-news news-item-s1" href="/">
-                <div class="news-wrap">
-                  <div class="item-text">
-                    <h3 v-html="item.title"></h3>
-                    <p class="item-info"><span v-html="item.author"></span></p>
-                  </div> 
-                  <div class="item-img">
-                    <img :src="item.imgurl[0].url" />
-                  </div> 
-                </div>
-              </a>
-              <a v-if="item.imgurl.length===0" class="J-news news-item-s0" href="/" target="_blank">
+          <section v-for="item in list"
+                   class="news-item">
+            <a v-if="item.imgurl.length>=3"
+               class="J-news news-item-s2"
+               href="/">
+              <div class="news-warp">
                 <h3 v-html="item.title"></h3>
-                <p class="item-info"><span v-html="item.author"></span></p>
-              </a>
+                <div class="item-img">
+                  <div class="img">
+                    <img class="lazy"
+                         :src="item.imgurl[0].url" />
+                  </div>
+                  <div class="img">
+                    <img class="lazy"
+                         :src="item.imgurl[1].url" />
+                  </div>
+                  <div class="img">
+                    <img class="lazy"
+                         :src="item.imgurl[2].url" />
+                  </div>
+                </div>
+                <div class="item-info">
+                  <span v-html="item.author"></span>
+                </div>
+              </div>
+            </a>
+            <a v-if="item.imgurl.length>=1"
+               class="J-news news-item-s1"
+               href="/">
+              <div class="news-wrap">
+                <div class="item-text">
+                  <h3 v-html="item.title"></h3>
+                  <p class="item-info"><span v-html="item.author"></span></p>
+                </div>
+                <div class="item-img">
+                  <img :src="item.imgurl[0].url" />
+                </div>
+              </div>
+            </a>
+            <a v-if="item.imgurl.length===0"
+               class="J-news news-item-s0"
+               href="/"
+               target="_blank">
+              <h3 v-html="item.title"></h3>
+              <p class="item-info"><span v-html="item.author"></span></p>
+            </a>
           </section>
         </template>
       </div>
+    </Scroll>
   </div>
 </template>
 
 <script>
 import { mapGetters, mapMutations } from 'vuex';
+import Scroll from 'base/scroll/scroll';
 import { getArtilceData } from 'api/api';
 
 export default {
@@ -60,11 +84,37 @@ export default {
     };
   },
   created() {
+    this.probeType = 2;
+    this.listenScroll = true;
+    this.pullup = true;
+    this.pulldown = true;
+
     this.param = {};
     this._initparam();
     this._shownewsList();
   },
+  mounted() {
+    this._initScroll();
+  },
   methods: {
+    _initScroll() {
+      setTimeout(() => {
+        this._setScrollHeight();
+        this.$refs.scroll.refresh();
+      }, 20)
+    },
+    _setScrollHeight() {
+      this.$refs.scroll.$el.style.height = this.newScrollHeight + 'px';
+    },
+    scroll(pos) {
+      console.log(pos)
+    },
+    scrollPullDown() {
+      console.log('xialale')
+    },
+    scrollEnd() {
+      console.log('scrollover')
+    },
     _shownewsList() {
       if (this.currentType.type === this.newType) {
         console.log(this.param, this.newType);
@@ -87,7 +137,10 @@ export default {
     }
   },
   computed: {
-    ...mapGetters(['currentType'])
+    ...mapGetters([
+      'currentType',
+      'newScrollHeight'
+    ])
   },
   watch: {
     currentType: {
@@ -96,6 +149,9 @@ export default {
         this._shownewsList();
       }
     }
+  },
+  components: {
+    Scroll
   }
 };
 </script>

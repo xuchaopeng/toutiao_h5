@@ -1,40 +1,42 @@
 <template>
-<transition name="navslide">
-  <div class="nav-manage">
-    <div class="toobar">
-      <span class="title">频道管理</span>
-      <span class="back iconfont" @click="back">&#xe601;</span>
+  <transition name="navslide">
+    <div class="nav-manage">
+      <div class="toobar">
+        <span class="title">频道管理</span>
+        <span class="back iconfont"
+              @click="back">&#xe601;</span>
+      </div>
+      <div class="delete-type">
+        <p class="controlTitle">点击删除以下频道<span class="save-btn"
+                @click="confirm">保存</span></p>
+        <ul class="controlDetail"
+            v-if="recomlist.length">
+          <li class="item"
+              v-for="(item,index) in recomlist"
+              :data-type="item.type"
+              :data-name="item.name"
+              :key="item.name"
+              @click="removeItem(index)">
+            <a :class="{active:item.type===currentType.type}">{{item.name}}</a>
+          </li>
+        </ul>
+      </div>
+      <div class="add-type">
+        <p class="controlTitle">点击添加以下频道</p>
+        <ul class="controlDetail"
+            v-if="otherList.length">
+          <li class="item"
+              v-for="(item,idx) in otherList"
+              :data-type="item.type"
+              :data-name="item.name"
+              :key="item.name"
+              @click.prevent.stop="addItem(idx)">
+            <a>{{item.name}}</a>
+          </li>
+        </ul>
+      </div>
     </div>
-    <div class="delete-type">
-      <p class="controlTitle">点击删除以下频道<span class="save-btn" @click="confirm">保存</span></p>
-      <ul class="controlDetail" v-if="recomlist.length">
-         <li class="item" 
-             v-for="(item,index) in recomlist"
-             :data-type="item.type"
-             :data-name="item.name"
-             :key="item.name"
-             @click="removeItem(index)"
-         >
-           <a :class="{active:item.type===currentType.type}">{{item.name}}</a>
-         </li>
-      </ul>
-    </div>
-    <div class="add-type">
-      <p class="controlTitle">点击添加以下频道</p>
-      <ul class="controlDetail" v-if="otherList.length">
-         <li class="item" 
-             v-for="(item,idx) in otherList"
-             :data-type="item.type"
-             :data-name="item.name"
-             :key="item.name"
-             @click.prevent.stop="addItem(idx)"
-         >
-           <a>{{item.name}}</a>
-         </li>
-      </ul>
-    </div>
-  </div>
-</transition>
+  </transition>
 </template>
 
 <script>

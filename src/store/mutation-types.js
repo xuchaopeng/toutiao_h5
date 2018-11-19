@@ -4,4 +4,4 @@ export const SET_RECOM_TYPES = 'SET_RECOM_TYPES';
 
 export const SET_OTHER_TYPES = 'SET_OTHER_TYPES';
 
-export const SET_CURRENT_TOP = 'SET_CURRENT_TOP';
+export const SET_SCROLL_HEIGHT = 'SET_SCROLL_HEIGHT';

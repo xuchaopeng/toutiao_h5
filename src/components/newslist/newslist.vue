@@ -1,50 +1,39 @@
 <template>
-  <div class="newslist-box" ref="newslistBox">
-    <Scroll ref="scroll">
-      <div>
-        <div v-for="item in recomTypes" :key="item.name">
-            <NewslistChild :newType="item.type"></NewslistChild>
-        </div>
+  <div class="newslist-box"
+       ref="newslistBox">
+    <div>
+      <div v-for="item in recomTypes">
+        <NewslistChild :newType="item.type"></NewslistChild>
       </div>
-    </Scroll>
+    </div>
   </div>
 </template>
 
 <script>
 import { mapGetters } from 'vuex';
 import NewslistChild from 'components/newslistchild/newslistchild';
-import Scroll from 'base/scroll/scroll';
 
 export default {
-  props: {
-    scrollHeight: {
-      type: Number,
-      default: 0
-    }
+  created() {
   },
   mounted() {
-    this._initScroll();
+    // this._initScroll();
   },
   methods: {
-    _initScroll() {
-      this._setScrollHeight();
-      this.$refs.scroll.refresh();
-    },
-    _setScrollHeight() {
-      this.$refs.scroll.$el.style.height = this.scrollHeight + 'px';
-    }
+    // _initScroll() {
+    //   this._setScrollHeight();
+    //   this.$refs.scroll.refresh();
+    // },
+    // _setScrollHeight() {
+    //   this.$refs.scroll.$el.style.height = this.newScrollHeight + 'px';
+    // },
   },
   computed: {
-    ...mapGetters(['currentType', 'recomTypes'])
+    ...mapGetters(['currentType', 'recomTypes', 'newScrollHeight'])
   },
   watch: {
-    scrollHeight() {
-      console.log(this.scrollHeight);
-      this._initScroll();
-    }
   },
   components: {
-    Scroll,
     NewslistChild
   }
 };
