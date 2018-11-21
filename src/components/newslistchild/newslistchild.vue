@@ -12,9 +12,9 @@
             @scrollPullDown="scrollPullDown"
             @scroll="scroll">
       <div class="news-list-wrap">
-        <template v-for="list in dataList">
-          <section v-for="item in list"
-                   class="news-item">
+        <template v-for="(list,pidx) in dataList">
+          <section v-for="(item,idx) in list"
+                   class="news-item" :key="pidx+'_'+idx">
             <a v-if="item.imgurl.length>=3"
                class="J-news news-item-s2"
                href="/">
@@ -35,7 +35,7 @@
                   </div>
                 </div>
                 <div class="item-info">
-                  <span v-html="item.author"></span>
+                  <span v-html="item.author=='Peng.c'?'东方网':item.author"></span>
                 </div>
               </div>
             </a>
@@ -45,7 +45,7 @@
               <div class="news-wrap">
                 <div class="item-text">
                   <h3 v-html="item.title"></h3>
-                  <p class="item-info"><span v-html="item.author"></span></p>
+                  <p class="item-info"><span v-html="item.author=='Peng.c'?'东方网':item.author"></span></p>
                 </div>
                 <div class="item-img">
                   <img :src="item.imgurl[0].url" />
@@ -57,7 +57,7 @@
                href="/"
                target="_blank">
               <h3 v-html="item.title"></h3>
-              <p class="item-info"><span v-html="item.author"></span></p>
+              <p class="item-info"><span v-html="item.author=='Peng.c'?'东方网':item.author"></span></p>
             </a>
           </section>
         </template>
@@ -80,7 +80,8 @@ export default {
   },
   data() {
     return {
-      dataList: []
+      dataList: [],
+      pgnum: 1
     };
   },
   created() {
@@ -101,52 +102,49 @@ export default {
       setTimeout(() => {
         this._setScrollHeight();
         this.$refs.scroll.refresh();
-      }, 20)
+      }, 20);
     },
     _setScrollHeight() {
       this.$refs.scroll.$el.style.height = this.newScrollHeight + 'px';
     },
-    scroll(pos) {
-      console.log(pos)
-    },
-    scrollPullDown() {
-      console.log('xialale')
-    },
+    scroll(pos) {},
+    scrollPullDown() {},
     scrollEnd() {
-      console.log('scrollover')
+      this._getArtilceData(this.param);
     },
     _shownewsList() {
       if (this.currentType.type === this.newType) {
-        console.log(this.param, this.newType);
         this._getArtilceData(this.param);
       }
     },
     _initparam() {
       this.param.acc_id = '';
       this.param.type = this.newType;
-      this._time = new Date().getTime();
+      this.param.pgnum = 1;
+      this.param._time = new Date().getTime();
     },
     _getArtilceData(param) {
       getArtilceData(param).then(res => {
         if (res.status == '1') {
           const len = res.data.length;
           this.param.acc_id = res.data[len - 1]._id;
+          this.param.pgnum += 1;
           this.dataList.push(res.data);
+          this.pgnum = this.param.pgnum;
         }
       });
     }
   },
   computed: {
-    ...mapGetters([
-      'currentType',
-      'newScrollHeight'
-    ])
+    ...mapGetters(['currentType', 'newScrollHeight'])
   },
   watch: {
     currentType: {
       deep: true,
       handler() {
-        this._shownewsList();
+        if (this.dataList.length === 0) {
+          this._shownewsList();
+        }
       }
     }
   },
