@@ -81,7 +81,6 @@ export default {
       //是否派发顶部下拉事件,用于下拉刷新
       if (this.pulldown) {
         this.scroll.on('touchend', (pos) => {
-          console.log(pos, '下拉的pos')
           //下拉动作
           if (pos.y > 50) {
             this.$emit('scrollPullDown')

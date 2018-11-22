@@ -6,15 +6,14 @@
             :data="dataList"
             :listenScroll="listenScroll"
             :pullup="pullup"
-            :pulldown="pulldown"
             :probeType="probeType"
             @scrollEnd="scrollEnd"
-            @scrollPullDown="scrollPullDown"
             @scroll="scroll">
       <div class="news-list-wrap">
         <template v-for="(list,pidx) in dataList">
           <section v-for="(item,idx) in list"
-                   class="news-item" :key="pidx+'_'+idx">
+                   class="news-item"
+                   :key="pidx+'_'+idx">
             <a v-if="item.imgurl.length>=3"
                class="J-news news-item-s2"
                href="/">
@@ -23,15 +22,15 @@
                 <div class="item-img">
                   <div class="img">
                     <img class="lazy"
-                         :src="item.imgurl[0].url" />
+                         v-lazy="item.imgurl[0].url" />
                   </div>
                   <div class="img">
                     <img class="lazy"
-                         :src="item.imgurl[1].url" />
+                         v-lazy="item.imgurl[1].url" />
                   </div>
                   <div class="img">
                     <img class="lazy"
-                         :src="item.imgurl[2].url" />
+                         v-lazy="item.imgurl[2].url" />
                   </div>
                 </div>
                 <div class="item-info">
@@ -39,7 +38,7 @@
                 </div>
               </div>
             </a>
-            <a v-if="item.imgurl.length>=1"
+            <a v-if="item.imgurl.length>=1&&item.imgurl.length<3"
                class="J-news news-item-s1"
                href="/">
               <div class="news-wrap">
@@ -48,7 +47,7 @@
                   <p class="item-info"><span v-html="item.author=='Peng.c'?'东方网':item.author"></span></p>
                 </div>
                 <div class="item-img">
-                  <img :src="item.imgurl[0].url" />
+                  <img v-lazy="item.imgurl[0].url" />
                 </div>
               </div>
             </a>
@@ -61,6 +60,13 @@
             </a>
           </section>
         </template>
+        <div v-show="loading">
+          <Loading></Loading>
+        </div>
+        <div v-show="nomoreData"
+             class="no-more-data">
+          <p>没有更多数据</p>
+        </div>
       </div>
     </Scroll>
   </div>
@@ -69,6 +75,7 @@
 <script>
 import { mapGetters, mapMutations } from 'vuex';
 import Scroll from 'base/scroll/scroll';
+import Loading from 'base/loading/loading';
 import { getArtilceData } from 'api/api';
 
 export default {
@@ -81,17 +88,20 @@ export default {
   data() {
     return {
       dataList: [],
-      pgnum: 1
+      loading: true,
+      nomoreData: false
     };
   },
   created() {
     this.probeType = 2;
     this.listenScroll = true;
+    // this.pulldown = true;
     this.pullup = true;
-    this.pulldown = true;
+    this.lock = false;
+    this.upPgnum = -1;
+    this.downPgnum = 1;
 
     this.param = {};
-    this._initparam();
     this._shownewsList();
   },
   mounted() {
@@ -107,30 +117,62 @@ export default {
     _setScrollHeight() {
       this.$refs.scroll.$el.style.height = this.newScrollHeight + 'px';
     },
-    scroll(pos) {},
-    scrollPullDown() {},
+    scroll(pos) {
+      if (pos.y >= 50 && !this.lock) {
+        console.log(pos.y)
+        this.lock = false;
+        // this.lock = true;
+        // this._initparam('up');
+        // this._scrollPullNewsList(this.param);
+      }
+    },
     scrollEnd() {
       this._getArtilceData(this.param);
     },
     _shownewsList() {
       if (this.currentType.type === this.newType) {
+        this._initparam('down');
         this._getArtilceData(this.param);
       }
     },
-    _initparam() {
-      this.param.acc_id = '';
-      this.param.type = this.newType;
-      this.param.pgnum = 1;
-      this.param._time = new Date().getTime();
-    },
-    _getArtilceData(param) {
+    _scrollPullNewsList(param) {
       getArtilceData(param).then(res => {
         if (res.status == '1') {
           const len = res.data.length;
+          console.log(len, 'up')
+          this.lock = false;
+        }
+      })
+    },
+    _initparam(ud) {
+      this.param.acc_id = this.param.acc_id ? this.param.acc_id : '';
+      this.param.type = this.newType;
+      this.param._time = new Date().getTime();
+      if (ud === 'up') {
+        this.param.pgnum = this.upPgnum;
+      } else {
+        this.param.pgnum = this.downPgnum;
+      }
+    },
+    _getArtilceData(param) {
+      if (this.nomoreData) return;
+      this.loading = true;
+      getArtilceData(param).then(res => {
+        if (res.status == '1') {
+          const len = res.data.length;
+          if (len === 0) {
+            this.nomoreData = true;
+            this.loading = false;
+            return;
+          }
           this.param.acc_id = res.data[len - 1]._id;
-          this.param.pgnum += 1;
+          this.downPgnum += 1;
+          this.param.pgnum = this.downPgnum;
           this.dataList.push(res.data);
-          this.pgnum = this.param.pgnum;
+          this.loading = false;
+          if (res.data.length < 8) {
+            this.nomoreData = true;
+          }
         }
       });
     }
@@ -149,7 +191,8 @@ export default {
     }
   },
   components: {
-    Scroll
+    Scroll,
+    Loading
   }
 };
 </script>
@@ -272,6 +315,20 @@ export default {
         font-size: 0.2rem;
       }
     }
+  }
+}
+.no-more-data {
+  width: 100%;
+  line-height: 0.6rem;
+  font-size: 0.24rem;
+  color: @color-text-i;
+  text-align: center;
+
+  padding: 0 0.3rem;
+  p {
+    border: 1px solid #f9f2f2;
+    border-top: none;
+    border-radius: 0 0 5px 5px;
   }
 }
 </style>
