@@ -5,9 +5,11 @@
     <Scroll ref="scroll"
             :data="dataList"
             :listenScroll="listenScroll"
-            :pullup="pullup"
             :probeType="probeType"
-            @scrollEnd="scrollEnd"
+            :pullDownRefresh="pullDownRefresh"
+            :pullUpLoad="pullUpLoad"
+            @pullingUp="pullingUp"
+            @pullingDown="pullingDown"
             @scroll="scroll">
       <div class="news-list-wrap">
         <template v-for="(list,pidx) in dataList">
@@ -94,12 +96,18 @@ export default {
   },
   created() {
     this.probeType = 2;
-    this.listenScroll = true;
-    // this.pulldown = true;
-    this.pullup = true;
+    this.listenScroll = false;
     this.lock = false;
     this.upPgnum = -1;
     this.downPgnum = 1;
+    //測試時間監聽
+    this.pullDownRefresh = {
+      threshold: 50,
+      stop: 20
+    };
+    this.pullUpLoad = {
+      threshold: 50
+    };
 
     this.param = {};
     this._shownewsList();
@@ -117,17 +125,14 @@ export default {
     _setScrollHeight() {
       this.$refs.scroll.$el.style.height = this.newScrollHeight + 'px';
     },
-    scroll(pos) {
-      if (pos.y >= 50 && !this.lock) {
-        console.log(pos.y)
-        this.lock = false;
-        // this.lock = true;
-        // this._initparam('up');
-        // this._scrollPullNewsList(this.param);
-      }
-    },
-    scrollEnd() {
+    scroll(pos) {},
+    pullingUp() {
+      console.log('pullingup');
       this._getArtilceData(this.param);
+    },
+    pullingDown() {
+      console.log('pullingDown');
+      this.$refs.scroll.scroll.finishPullDown();
     },
     _shownewsList() {
       if (this.currentType.type === this.newType) {
@@ -139,10 +144,10 @@ export default {
       getArtilceData(param).then(res => {
         if (res.status == '1') {
           const len = res.data.length;
-          console.log(len, 'up')
+          console.log(len, 'up');
           this.lock = false;
         }
-      })
+      });
     },
     _initparam(ud) {
       this.param.acc_id = this.param.acc_id ? this.param.acc_id : '';
@@ -173,6 +178,7 @@ export default {
           if (res.data.length < 8) {
             this.nomoreData = true;
           }
+          this.$refs.scroll.scroll.finishPullUp();
         }
       });
     }

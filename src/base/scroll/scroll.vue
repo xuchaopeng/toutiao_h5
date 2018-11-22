@@ -25,17 +25,17 @@ export default {
       type: Boolean,
       default: false
     },
+    pullDownRefresh: {
+      type: null,
+      default: false
+    },
+    pullUpLoad: {
+      type: null,
+      default: false
+    },
     data: {
       type: Array,
       default: null
-    },
-    pullup: {
-      type: Boolean,
-      default: false
-    },
-    pulldown: {
-      type: Boolean,
-      default: false
     },
     deforeScroll: {
       type: Boolean,
@@ -49,74 +49,87 @@ export default {
   mounted() {
     //确保dom渲染完毕才初始化
     setTimeout(() => {
-      this._initScroll()
-    }, 20)
+      this._initScroll();
+    }, 20);
   },
   methods: {
     _initScroll() {
       if (!this.$refs.wrapper) {
         return;
       }
-      //better-scroll初始化
-      this.scroll = new BScroll(this.$refs.wrapper, {
+      let options = {
         probeType: this.probeType,
         click: this.click,
-        scrollX: this.scrollX
-      })
+        scrollX: this.scrollX,
+        pullDownRefresh: this.pullDownRefresh,
+        pullUpLoad: this.pullUpLoad
+      };
+      //better-scroll初始化
+      this.scroll = new BScroll(this.$refs.wrapper, options);
       //是否派发滚动事件
       if (this.listenScroll) {
         let me = this;
-        this.scroll.on('scroll', (pos) => {
-          me.$emit('scroll', pos)
-        })
+        this.scroll.on('scroll', pos => {
+          me.$emit('scroll', pos);
+        });
       }
       //是否派发滚动到底部事件,上拉加载
-      if (this.pullup) {
-        this.scroll.on('scrollEnd', () => {
-          if (this.scroll.y <= (this.scroll.maxScrollY + 80)) {
-            this.$emit('scrollEnd')
-          }
-        })
+      // if (this.pullup) {
+      //   this.scroll.on('scrollEnd', () => {
+      //     if (this.scroll.y <= this.scroll.maxScrollY + 80) {
+      //       this.$emit('scrollEnd');
+      //     }
+      //   });
+      // }
+      if (this.pullDownRefresh) {
+        this._initPullDownRefresh();
       }
-      //是否派发顶部下拉事件,用于下拉刷新
-      if (this.pulldown) {
-        this.scroll.on('touchend', (pos) => {
-          //下拉动作
-          if (pos.y > 50) {
-            this.$emit('scrollPullDown')
-          }
-        })
+      if (this.pullUpLoad) {
+        this._initPullUpLoad();
       }
       //是否派发列表滚动开始事件
       if (this.beforeScroll) {
         this.scroll.on('beforeScrollStart', () => {
-          this.$emit('boforeScroll')
-        })
+          this.$emit('boforeScroll');
+        });
       }
     },
+    _initPullUpLoad() {
+      this.scroll.on('pullingUp', () => {
+        this.isPullUpLoad = true;
+        this.$emit('pullingUp');
+      });
+    },
+    _initPullDownRefresh() {
+      this.scroll.on('pullingDown', () => {
+        this.beforePullDown = false;
+        this.isPullingDown = true;
+        this.$emit('pullingDown');
+      });
+    },
     disable() {
-      this.scroll && this.scroll.disable()
+      this.scroll && this.scroll.disable();
     },
     enable() {
-      this.scroll && this.scroll.enable()
+      this.scroll && this.scroll.enable();
     },
     refresh() {
-      this.scroll && this.scroll.refresh()
+      this.scroll && this.scroll.refresh();
     },
     scrollTo() {
-      this.scroll && this.scroll.scrollTo.apply(this.scroll, arguments)
+      this.scroll && this.scroll.scrollTo.apply(this.scroll, arguments);
     },
     scrollToElement() {
-      this.scroll && this.scroll.scrollToElement.apply(this.scroll, arguments)
+      this.scroll && this.scroll.scrollToElement.apply(this.scroll, arguments);
     }
   },
   watch: {
     //监听数据的变化,延时后调用refresh,重新计算
     data() {
       setTimeout(() => {
-        this.refresh()
-      }, this.refreshDelay)
+        this.refresh();
+      }, this.refreshDelay);
     }
   }
-}
+};
 </script>
