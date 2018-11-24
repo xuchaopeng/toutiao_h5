@@ -13,11 +13,11 @@
             @scroll="scroll">
       <div class="news-list-wrap">
         <transition name="prompt">
-        <div class="prompt-refresh">
-          <div v-show="prompt" >
-            <p>{{prompt === -1 ? '没有更多的数据':'为您推荐了'+prompt+'篇文章'}}</p>
+          <div class="prompt-refresh">
+            <div v-show="prompt" >
+              <p>{{prompt === -1 ? '没有更多的数据':'为您推荐了'+prompt+'篇文章'}}</p>
+            </div>
           </div>
-        </div>
         </transition>
         <div v-show="loadingUp">
           <Loading></Loading>
@@ -30,7 +30,12 @@
           <section v-for="(item,idx) in list"
                    class="news-item"
                    :key="pidx+'_'+idx">
-            <a v-if="item.imgurl.length>=3"
+            <div v-if="item.type==='refersh'" 
+                 class="click-refersh"
+                 @click="clickRefersh">
+                 刚刚看到这里 点击刷新<span class="iconfont">&#xe682;</span>
+            </div>
+            <a v-else-if="item.imgurl.length>=3"
                class="J-news news-item-s2"
                href="/">
               <div class="news-warp">
@@ -54,7 +59,7 @@
                 </div>
               </div>
             </a>
-            <a v-if="item.imgurl.length>=1&&item.imgurl.length<3"
+            <a v-else-if="item.imgurl.length>=1"
                class="J-news news-item-s1"
                href="/">
               <div class="news-wrap">
@@ -67,7 +72,7 @@
                 </div>
               </div>
             </a>
-            <a v-if="item.imgurl.length===0"
+            <a v-else-if="item.imgurl.length===0"
                class="J-news news-item-s0"
                href="/"
                target="_blank">
@@ -85,6 +90,7 @@
         </div>
       </div>
     </Scroll>
+
   </div>
 </template>
 
@@ -93,7 +99,7 @@ import { mapGetters, mapMutations } from 'vuex';
 import Scroll from 'base/scroll/scroll';
 import Loading from 'base/loading/loading';
 import { getArtilceData } from 'api/api';
-
+const SCROLL_TOP_TIME = 800;
 export default {
   props: {
     newType: {
@@ -170,6 +176,14 @@ export default {
       }
       this._getArtilceData('up');
     },
+    clickRefersh() {
+      this.$refs.scroll.scrollTo(0, 0, SCROLL_TOP_TIME);
+      if (this.nomoreData) {
+        this._nomoreData('up');
+        return;
+      }
+      this._getArtilceData('up');
+    },
     _shownewsList() {
       if (this.currentType.type === this.newType) {
         this._initparam('down');
@@ -187,10 +201,6 @@ export default {
       }
     },
     _getArtilceData(action) {
-      // if (this.nomoreData) {
-      //   if (action === 'up') this._setPrompt();
-      //   return;
-      // }
       action === 'down' ? (this.loadingDown = true) : (this.loadingUp = true);
       getArtilceData(this.param).then(res => {
         if (res.status == '1') {
@@ -201,6 +211,7 @@ export default {
             return;
           }
           this.param.acc_id = res.data[len - 1]._id;
+
           this._dealResult(action, res.data);
           if (len < 8) {
             this.nomoreData = true;
@@ -219,12 +230,27 @@ export default {
       } else {
         this.upPgnum += 1;
         this.param.pgnum = this.upPgnum;
-        this.dataList.unshift(data);
         this.prompt = data.length;
+        this._setArticlePrompt(data);
         this._setPrompt();
         this.$refs.scroll.scroll.finishPullDown();
         this.loadingUp = false;
       }
+    },
+    _setArticlePrompt(data) {
+      const arr = this.dataList[0];
+      const len = arr.length;
+      if (!arr || len === 0) {
+        this.dataList.unshift(data);
+        return;
+      }
+      if (arr[len - 1].type === 'refresh') {
+        arr.pop();
+      }
+      data.push({
+        type: 'refersh'
+      });
+      this.dataList.unshift(data);
     },
     _setPrompt() {
       clearTimeout(this.xcp);
@@ -276,6 +302,28 @@ export default {
     position: relative;
     border-bottom: 1px solid rgba(221, 221, 221, 0.6);
     padding: 0;
+  }
+  .click-refersh {
+    width: 100%;
+    line-height: 0.6rem;
+    font-size: 0.24rem;
+    text-align: center;
+    background-color: rgba(41, 144, 215, 0.08);
+    border: #2a90d7 1px solid;
+    border-radius: 4px;
+    color: #2a90d7;
+    transition: background-color 0.3s linear 0s;
+    span {
+      font-size: 0.35rem;
+      font-weight: bold;
+      position: relative;
+      line-height: 0;
+      position: relative;
+      top: 2px;
+    }
+    &:hover {
+      background: rgba(41, 144, 215, 0.2);
+    }
   }
   .news-item-s2 {
     display: block;

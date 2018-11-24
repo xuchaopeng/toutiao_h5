@@ -73,14 +73,7 @@ export default {
           me.$emit('scroll', pos);
         });
       }
-      //是否派发滚动到底部事件,上拉加载
-      // if (this.pullup) {
-      //   this.scroll.on('scrollEnd', () => {
-      //     if (this.scroll.y <= this.scroll.maxScrollY + 80) {
-      //       this.$emit('scrollEnd');
-      //     }
-      //   });
-      // }
+
       if (this.pullDownRefresh) {
         this._initPullDownRefresh();
       }
