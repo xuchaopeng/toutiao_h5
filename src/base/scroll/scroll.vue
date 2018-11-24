@@ -33,6 +33,10 @@ export default {
       type: null,
       default: false
     },
+    momentum: {
+      type: Boolean,
+      default: false
+    },
     data: {
       type: Array,
       default: null
@@ -62,7 +66,8 @@ export default {
         click: this.click,
         scrollX: this.scrollX,
         pullDownRefresh: this.pullDownRefresh,
-        pullUpLoad: this.pullUpLoad
+        pullUpLoad: this.pullUpLoad,
+        momentum: this.momentum
       };
       //better-scroll初始化
       this.scroll = new BScroll(this.$refs.wrapper, options);

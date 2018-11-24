@@ -6,6 +6,7 @@
             :data="dataList"
             :listenScroll="listenScroll"
             :probeType="probeType"
+            :momentum="momentum"
             :pullDownRefresh="pullDownRefresh"
             :pullUpLoad="pullUpLoad"
             @pullingUp="pullingUp"
@@ -123,6 +124,7 @@ export default {
   created() {
     this.probeType = 1;
     this.listenScroll = true;
+    this.momentum = false;
     this.lock = false;
     this.upPgnum = -1;
     this.downPgnum = 1;
