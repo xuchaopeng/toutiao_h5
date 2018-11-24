@@ -12,6 +12,20 @@
             @pullingDown="pullingDown"
             @scroll="scroll">
       <div class="news-list-wrap">
+        <transition name="prompt">
+        <div class="prompt-refresh">
+          <div v-show="prompt" >
+            <p>{{prompt === -1 ? '没有更多的数据':'为您推荐了'+prompt+'篇文章'}}</p>
+          </div>
+        </div>
+        </transition>
+        <div v-show="loadingUp">
+          <Loading></Loading>
+        </div>
+        <div v-show="relaseUp.show"
+             class="relase-refresh">
+          {{relaseUp.text}}
+        </div>
         <template v-for="(list,pidx) in dataList">
           <section v-for="(item,idx) in list"
                    class="news-item"
@@ -62,7 +76,7 @@
             </a>
           </section>
         </template>
-        <div v-show="loading">
+        <div v-show="loadingDown">
           <Loading></Loading>
         </div>
         <div v-show="nomoreData"
@@ -90,13 +104,19 @@ export default {
   data() {
     return {
       dataList: [],
-      loading: true,
+      loadingUp: false,
+      loadingDown: true,
+      relaseUp: {
+        text: '',
+        show: true
+      },
+      prompt: 0,
       nomoreData: false
     };
   },
   created() {
-    this.probeType = 2;
-    this.listenScroll = false;
+    this.probeType = 1;
+    this.listenScroll = true;
     this.lock = false;
     this.upPgnum = -1;
     this.downPgnum = 1;
@@ -125,29 +145,36 @@ export default {
     _setScrollHeight() {
       this.$refs.scroll.$el.style.height = this.newScrollHeight + 'px';
     },
-    scroll(pos) {},
+    scroll(pos) {
+      if (this.lock) return;
+      if (pos.y >= 50) {
+        this.relaseUp.text = '释放即可刷新';
+      } else if (pos.y > 10) {
+        this.relaseUp.text = '下拉即可加载';
+      }
+    },
     pullingUp() {
-      console.log('pullingup');
-      this._getArtilceData(this.param);
+      if (this.nomoreData) {
+        this._nomoreData('down');
+        return;
+      }
+      this._getArtilceData('down');
     },
     pullingDown() {
-      console.log('pullingDown');
-      this.$refs.scroll.scroll.finishPullDown();
+      this.lock = true;
+      this.relaseUp.show = false;
+      this.relaseUp.text = '';
+      if (this.nomoreData) {
+        this._nomoreData('up');
+        return;
+      }
+      this._getArtilceData('up');
     },
     _shownewsList() {
       if (this.currentType.type === this.newType) {
         this._initparam('down');
-        this._getArtilceData(this.param);
+        this._getArtilceData('down');
       }
-    },
-    _scrollPullNewsList(param) {
-      getArtilceData(param).then(res => {
-        if (res.status == '1') {
-          const len = res.data.length;
-          console.log(len, 'up');
-          this.lock = false;
-        }
-      });
     },
     _initparam(ud) {
       this.param.acc_id = this.param.acc_id ? this.param.acc_id : '';
@@ -159,28 +186,65 @@ export default {
         this.param.pgnum = this.downPgnum;
       }
     },
-    _getArtilceData(param) {
-      if (this.nomoreData) return;
-      this.loading = true;
-      getArtilceData(param).then(res => {
+    _getArtilceData(action) {
+      // if (this.nomoreData) {
+      //   if (action === 'up') this._setPrompt();
+      //   return;
+      // }
+      action === 'down' ? (this.loadingDown = true) : (this.loadingUp = true);
+      getArtilceData(this.param).then(res => {
         if (res.status == '1') {
           const len = res.data.length;
           if (len === 0) {
             this.nomoreData = true;
-            this.loading = false;
+            this._nomoreData(action);
             return;
           }
           this.param.acc_id = res.data[len - 1]._id;
-          this.downPgnum += 1;
-          this.param.pgnum = this.downPgnum;
-          this.dataList.push(res.data);
-          this.loading = false;
-          if (res.data.length < 8) {
+          this._dealResult(action, res.data);
+          if (len < 8) {
             this.nomoreData = true;
           }
-          this.$refs.scroll.scroll.finishPullUp();
+          this.lock = false;
         }
       });
+    },
+    _dealResult(action, data) {
+      if (action === 'down') {
+        this.downPgnum += 1;
+        this.param.pgnum = this.downPgnum;
+        this.dataList.push(data);
+        this.$refs.scroll.scroll.finishPullUp();
+        this.loadingDown = false;
+      } else {
+        this.upPgnum += 1;
+        this.param.pgnum = this.upPgnum;
+        this.dataList.unshift(data);
+        this.prompt = data.length;
+        this._setPrompt();
+        this.$refs.scroll.scroll.finishPullDown();
+        this.loadingUp = false;
+      }
+    },
+    _setPrompt() {
+      clearTimeout(this.xcp);
+      this.xcp = setTimeout(() => {
+        this.prompt = 0;
+        this.relaseUp.show = true;
+      }, 1400);
+    },
+    _nomoreData(action) {
+      if (action === 'down') {
+        this.loadingDown = false;
+        this.$refs.scroll.scroll.finishPullUp();
+      } else {
+        this.loadingUp = false;
+        if (this.nomoreData) {
+          this.prompt = -1;
+          this._setPrompt();
+        }
+        this.$refs.scroll.scroll.finishPullDown();
+      }
     }
   },
   computed: {
@@ -206,6 +270,7 @@ export default {
 <style lang="less" scoped>
 @import '~common/less/variable.less';
 .news-list-wrap {
+  position: relative;
   .news-item {
     margin: 0 0.3rem;
     position: relative;
@@ -329,12 +394,44 @@ export default {
   font-size: 0.24rem;
   color: @color-text-i;
   text-align: center;
-
   padding: 0 0.3rem;
   p {
     border: 1px solid #f9f2f2;
     border-top: none;
     border-radius: 0 0 5px 5px;
+  }
+}
+.relase-refresh {
+  position: absolute;
+  transform: translateY(-100%);
+  width: 100%;
+  height: 0.6rem;
+  line-height: 0.6rem;
+  font-size: 0.24rem;
+  color: @color-text-i;
+  text-align: center;
+}
+.prompt-refresh {
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: 1;
+  width: 100%;
+  line-height: 0.6rem;
+  font-size: 0.24rem;
+  text-align: center;
+  opacity: 1;
+  p {
+    background-color: rgba(213, 233, 247, 0.9);
+    color: #2a90d7;
+  }
+  &.prompt-enter-active,
+  &.prompt-leave-active {
+    transition: all 0.5s;
+  }
+  &.prompt-enter,
+  &.prompt-leave-active {
+    opacity: 0;
   }
 }
 </style>
