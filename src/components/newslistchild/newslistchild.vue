@@ -124,7 +124,7 @@ export default {
   created() {
     this.probeType = 1;
     this.listenScroll = true;
-    this.momentum = false;
+    this.momentum = true;
     this.lock = false;
     this.upPgnum = -1;
     this.downPgnum = 1;
