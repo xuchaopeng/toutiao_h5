@@ -20,7 +20,7 @@ export default {
 </script>
 
 <style lang="less">
-@import '~common/less/variable.less';
+@import "~common/less/variable.less";
 .loading {
   text-align: center;
   width: 100%;
@@ -29,6 +29,9 @@ export default {
     line-height: 0.4rem;
     font-size: 0.24rem;
     color: @color-text-i;
+  }
+  .xcp {
+    text-align: center;
   }
 }
 </style>
